@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Enhanced</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f7fa; }
+        
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            width: 400px;
+            text-align: center;
+        }
+        
+        .login-box h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .google-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .google-btn:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        .setup-section {
+            display: none;
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        .setup-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .dashboard-page {
+            display: none;
+        }
+        
+        .dashboard-page.show {
+            display: block;
+        }
+        
+        .topbar {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 50px;
+            width: 250px;
+            height: calc(100vh - 50px);
+            background: #2c3e50;
+            color: white;
+            overflow-y: auto;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background: #34495e;
+        }
+        
+        .menu-item.active {
+            background: #34495e;
+            border-left-color: #667eea;
+        }
+        
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+        }
+        
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .employee-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .employee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .employee-card h3 {
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #667eea;
+        }
+        
+        .employee-avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .status-online {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-offline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .sync-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .connected-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        input[type="file"] {
+            padding: 8px;
+        }
+        
+        .location-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .location-item-info {
+            flex: 1;
+        }
+        
+        .delete-location-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .add-location-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .checkin-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+        
+        .credential-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .credential-box h4 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+        
+        .credential-info {
+            font-family: monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-page">
+        <div class="login-box">
+            <h1>🔐 Admin Dashboard</h1>
+            <p>Sign in with Google to access Google Sheets backend</p>
+            
+            <button class="google-btn" onclick="signInWithGoogle()">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
+                    <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
+                    <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
+                    <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
+                </svg>
+                Sign in with Google
+            </button>
+            
+            <!-- Setup Section -->
+            <div class="setup-section" id="setupSection">
+                <div class="info-box">
+                    ✅ <strong>Google Account Connected!</strong><br>
+                    Now, set up your Google Sheet for employee tracking.
+                </div>
+                
+                <div class="form-group">
+                    <label>Google Sheets URL</label>
+                    <input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Create a new Google Sheet and paste its URL here
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Sheet Name for Logs</label>
+                    <input type="text" id="sheetName" value="AttendanceLogs" placeholder="AttendanceLogs">
+                </div>
+                
+                <button class="btn" onclick="connectSheet()">Connect Sheet & Continue</button>
+                
+                <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                    <strong>Note:</strong> The sheet will store attendance logs with employee photos
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboardPage" class="dashboard-page">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2>Admin Dashboard</h2>
+                <span class="user-badge" id="userEmail"></span>
+                <span class="connected-badge">📊 Google Sheets Connected</span>
+            </div>
+            <button class="logout-btn" onclick="doLogout()">Logout</button>
+        </div>
+        
+        <div class="sidebar">
+            <div class="menu-item active" onclick="showSection('overview')">📊 Overview</div>
+            <div class="menu-item" onclick="showSection('map')">🗺️ Live Map</div>
+            <div class="menu-item" onclick="showSection('locations')">📍 Check-in Locations</div>
+            <div class="menu-item" onclick="showSection('employees')">👥 Employees</div>
+            <div class="menu-item" onclick="showSection('addEmployee')">➕ Add Employee</div>
+            <div class="menu-item" onclick="showSection('logs')">📋 Attendance Logs</div>
+            <div class="menu-item" onclick="showSection('settings')">⚙️ Settings</div>
+        </div>
+        
+        <div class="content">
+            <!-- OVERVIEW -->
+            <div id="overview" class="section active">
+                <h1>Live Overview</h1>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalEmployees">0</div>
+                        <div class="stat-label">Total Employees</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="checkedInCount">0</div>
+                        <div class="stat-label">Checked In Now</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalCheckIns">0</div>
+                        <div class="stat-label">Total Check-ins Today</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalLogs">0</div>
+                        <div class="stat-label">Total Logs in Sheet</div>
+                    </div>
+                </div>
+                
+                <h2>Active Employees</h2>
+                <div class="employee-grid" id="employeeGrid"></div>
+            </div>
+            
+            <!-- MAP -->
+            <div id="map-section" class="section">
+                <h1>Live Employee Tracking</h1>
+                <div class="card">
+                    <p style="margin-bottom: 15px;"><strong>Real-time locations updating every 5 seconds</strong></p>
+                    <div id="map"></div>
+                </div>
+            </div>
+            
+            <!-- LOCATIONS -->
+            <div id="locations" class="section">
+                <h1>📍 Check-in Locations</h1>
+                <div class="card">
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Add multiple check-in locations. Employees can check in from any of these locations.
+                    </p>
+                    
+                    <div id="locationsList"></div>
+                    
+                    <button class="add-location-btn" onclick="addNewLocation()">➕ Add New Location</button>
+                </div>
+            </div>
+            
+            <!-- EMPLOYEES LIST -->
+            <div id="employees" class="section">
+                <h1>Employee Management</h1>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Username</th>
+                                <th>Last Seen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ADD EMPLOYEE -->
+            <div id="addEmployee" class="section">
+                <h1>Add New Employee</h1>
+                <div class="card" style="max-width: 600px;">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="newEmpName" placeholder="John Doe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="newEmpUsername" placeholder="john">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="newEmpPassword" placeholder="password123">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="text" id="newEmpPosition" placeholder="Sales Manager">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="newEmpEmail" placeholder="john@company.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="newEmpPhone" placeholder="+20 123 456 7890">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Profile Image (Optional)</label>
+                        <input type="file" id="newEmpImage" accept="image/*" onchange="previewImage(this)">
+                        <div id="imagePreview" style="margin-top: 10px; display: none;">
+                            <img id="previewImg" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 2px solid #ddd;">
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="addEmployee()">Add Employee & Generate Credentials</button>
+                    
+                    <div id="credentialDisplay" style="display: none;" class="credential-box">
+                        <h4>🔑 Employee Credentials Created</h4>
+                        <div class="credential-info">
+                            <strong>Username:</strong> <span id="displayUsername"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('displayUsername')">Copy</button>
+                        </div>
+                        <div class="credential-info">
+                            <strong>Password:</strong> <span id="displayPassword"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('displayPassword')">Copy</button>
+                        </div>
+                        <p style="margin-top: 10px; color: #856404; font-size: 13px;">
+                            ⚠️ Share these credentials with the employee. They will automatically have access to the connected Google Sheet.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ATTENDANCE LOGS -->
+            <div id="logs" class="section">
+                <h1>Attendance Logs</h1>
+                <div class="card">
+                    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <label style="margin-right: 10px;">Filter by Date:</label>
+                            <input type="date" id="filterDate" onchange="filterLogs()">
+                            <button class="btn" style="width: auto; padding: 8px 15px; margin-left: 10px;" onclick="loadLogs()">Refresh Logs</button>
+                        </div>
+                        <button class="btn" style="width: auto; padding: 8px 15px;" onclick="exportLogs()">Export to CSV</button>
+                    </div>
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Employee</th>
+                                    <th>Action</th>
+                                    <th>Location</th>
+                                    <th>Photo</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SETTINGS -->
+            <div id="settings" class="section">
+                <h1>Settings</h1>
+                <div class="card" style="max-width: 600px;">
+                    <h3>Google Sheet Configuration</h3>
+                    <div class="form-group">
+                        <label>Sheet URL</label>
+                        <input type="text" id="settingsSheetUrl" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Sheet Name</label>
+                        <input type="text" id="settingsSheetName" readonly>
+                    </div>
+                    <button class="btn" onclick="openGoogleSheet()">Open Google Sheet</button>
+                    
+                    <hr style="margin: 30px 0;">
+                    
+                    <h3>Work Hours</h3>
+                    <div class="form-group">
+                        <label>Work Start Time</label>
+                        <input type="time" id="workStart" value="09:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Work End Time</label>
+                        <input type="time" id="workEnd" value="17:00">
+                    </div>
+                    <button class="btn" onclick="saveSettings()">Save Settings</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sync Status Indicator -->
+        <div class="sync-status">
+            <div class="sync-indicator"></div>
+            <span>Live Sync Active</span>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map = null;
+        let locationMarkers = [];
+        let employeeMarkers = [];
+        let googleUser = null;
+        let sheetConfig = { url: '', name: 'AttendanceLogs', id: '' };
+        let checkInLocations = [];
+        let employees = [];
+        let attendanceLogs = [];
+        
+        function signInWithGoogle() {
+            const email = prompt('Demo: Enter admin email (e.g., admin@company.com):');
+            if (email) {
+                googleUser = { email: email };
+                document.getElementById('setupSection').classList.add('active');
+                alert('✅ Google Sign-In Successful!\n\nEmail: ' + email + '\n\nNow connect your Google Sheet.');
+            }
+        }
+        
+        function connectSheet() {
+            const url = document.getElementById('sheetUrl').value;
+            const name = document.getElementById('sheetName').value;
+            
+            if (!url || !name) {
+                alert('Please enter both Sheet URL and Sheet Name');
+                return;
+            }
+            
+            const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (match) {
+                sheetConfig.id = match[1];
+            }
+            
+            sheetConfig.url = url;
+            sheetConfig.name = name;
+            
+            localStorage.setItem('sheetConfig', JSON.stringify(sheetConfig));
+            localStorage.setItem('googleUser', JSON.stringify(googleUser));
+            
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').classList.add('show');
+            initDashboard();
+        }
+        
+        function initDashboard() {
+            const savedConfig = localStorage.getItem('sheetConfig');
+            const savedUser = localStorage.getItem('googleUser');
+            
+            if (savedConfig) sheetConfig = JSON.parse(savedConfig);
+            if (savedUser) {
+                googleUser = JSON.parse(savedUser);
+                document.getElementById('userEmail').textContent = googleUser.email;
+            }
+            
+            const savedEmployees = localStorage.getItem('employees');
+            if (savedEmployees) employees = JSON.parse(savedEmployees);
+            
+            const savedLogs = localStorage.getItem('attendanceLogs');
+            if (savedLogs) attendanceLogs = JSON.parse(savedLogs);
+            
+            const savedLocations = localStorage.getItem('checkInLocations');
+            if (savedLocations) {
+                checkInLocations = JSON.parse(savedLocations);
+            } else {
+                checkInLocations = [{
+                    id: Date.now(),
+                    name: 'Main Office',
+                    lat: 30.0444,
+                    lng: 31.2357,
+                    radius: 200
+                }];
+                localStorage.setItem('checkInLocations', JSON.stringify(checkInLocations));
+            }
+            
+            updateStats();
+            updateEmployeeGrid();
+            updateEmployeeTable();
+            loadLogs();
+            displayLocations();
+            
+            document.getElementById('settingsSheetUrl').value = sheetConfig.url;
+            document.getElementById('settingsSheetName').value = sheetConfig.name;
+            
+            startRealTimeSync();
+        }
+        
+        function startRealTimeSync() {
+            setInterval(function() {
+                employees.forEach(function(emp) {
+                    if (emp.status === 'checked-in' && emp.lat && emp.lng) {
+                        emp.lat += (Math.random() - 0.5) * 0.0005;
+                        emp.lng += (Math.random() - 0.5) * 0.0005;
+                        emp.lastUpdate = new Date().toISOString();
+                    }
+                });
+                
+                saveEmployees();
+                updateEmployeeMarkers();
+                updateStats();
+            }, 5000);
+        }
+        
+        function displayLocations() {
+            const list = document.getElementById('locationsList');
+            let html = '';
+            
+            checkInLocations.forEach(function(loc) {
+                html += '<div class="location-item">' +
+                    '<div class="location-item-info">' +
+                    '<h4>📍 ' + loc.name + '</h4>' +
+                    '<p style="color: #666; font-size: 13px; margin-top: 5px;">Lat: ' + loc.lat.toFixed(6) + ', Lng: ' + loc.lng.toFixed(6) + '</p>' +
+                    '<p style="color: #666; font-size: 13px;">Radius: ' + loc.radius + ' meters</p>' +
+                    '</div>' +
+                    '<button class="delete-location-btn" onclick="deleteLocation(' + loc.id + ')">Delete</button>' +
+                    '</div>';
+            });
+            
+            list.innerHTML = html;
+        }
+        
+        function addNewLocation() {
+            const name = prompt('Enter location name (e.g., Branch Office, Warehouse):');
+            if (!name) return;
+            
+            const lat = parseFloat(prompt('Enter latitude:', '30.0444'));
+            const lng = parseFloat(prompt('Enter longitude:', '31.2357'));
+            const radius = parseInt(prompt('Enter radius in meters:', '200'));
+            
+            if (isNaN(lat) || isNaN(lng) || isNaN(radius)) {
+                alert('Invalid values entered');
+                return;
+            }
+            
+            const newLocation = {
+                id: Date.now(),
+                name: name,
+                lat: lat,
+                lng: lng,
+                radius: radius
+            };
+            
+            checkInLocations.push(newLocation);
+            localStorage.setItem('checkInLocations', JSON.stringify(checkInLocations));
+            displayLocations();
+            
+            if (map) {
+                updateLocationMarkers();
+            }
+            
+            alert('✅ Location added successfully!');
+        }
+        
+        function deleteLocation(id) {
+            if (checkInLocations.length === 1) {
+                alert('⚠️ You must have at least one check-in location');
+                return;
+            }
+            
+            if (confirm('Delete this location?')) {
+                checkInLocations = checkInLocations.filter(l => l.id !== id);
+                localStorage.setItem('checkInLocations', JSON.stringify(checkInLocations));
+                displayLocations();
+                if (map) {
+                    updateLocationMarkers();
+                }
+            }
+        }
+        
+        function updateStats() {
+            const checkedIn = employees.filter(e => e.status === 'checked-in').length;
+            const today = new Date().toDateString();
+            const todayLogs = attendanceLogs.filter(log => 
+                new Date(log.timestamp).toDateString() === today && log.action === 'check-in'
+            ).length;
+            
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('checkedInCount').textContent = checkedIn;
+            document.getElementById('totalCheckIns').textContent = todayLogs;
+            document.getElementById('totalLogs').textContent = attendanceLogs.length;
+        }
+        
+        function updateEmployeeGrid() {
+            const grid = document.getElementById('employeeGrid');
+            let html = '';
+            
+            employees.forEach(function(emp) {
+                const avatarHTML = emp.image 
+                    ? '<img src="' + emp.image + '" class="employee-avatar">'
+                    : '<div class="employee-avatar-placeholder">' + emp.name.charAt(0) + '</div>';
+                
+                html += '<div class="employee-card">' +
+                    '<h3>' + avatarHTML + '<span>' + emp.name + '</span></h3>' +
+                    '<p>' + (emp.position || 'Employee') + '</p>' +
+                    '<p class="' + (emp.status === 'checked-in' ? 'status-online' : 'status-offline') + '">' + 
+                    (emp.status === 'checked-in' ? '🟢 Online' : '🔴 Offline') + '</p>' +
+                    '<small style="color: #999;">Last update: ' + (emp.lastUpdate ? new Date(emp.lastUpdate).toLocaleTimeString() : 'Never') + '</small>' +
+                    '</div>';
+            });
+            
+            grid.innerHTML = html || '<p style="color: #999; text-align: center; grid-column: 1/-1;">No employees yet. Add your first employee!</p>';
+        }
+        
+        function updateEmployeeTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            let html = '';
+            
+            employees.forEach(function(emp) {
+                const avatarHTML = emp.image 
+                    ? '<img src="' + emp.image + '" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">'
+                    : '<div style="width: 40px; height: 40px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">' + emp.name.charAt(0) + '</div>';
+                
+                html += '<tr>' +
+                    '<td>' + avatarHTML + '</td>' +
+                    '<td>' + emp.name + '</td>' +
+                    '<td>' + (emp.position || '-') + '</td>' +
+                    '<td class="' + (emp.status === 'checked-in' ? 'status-online' : 'status-offline') + '">' + emp.status + '</td>' +
+                    '<td>' + emp.username + '</td>' +
+                    '<td>' + (emp.lastUpdate ? new Date(emp.lastUpdate).toLocaleString() : 'Never') + '</td>' +
+                    '</tr>';
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">No employees yet</td></tr>';
+        }
+        
+        function loadLogs() {
+            const tbody = document.getElementById('logsTableBody');
+            let html = '';
+            
+            const sortedLogs = attendanceLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            sortedLogs.forEach(function(log) {
+                const statusClass = log.action === 'check-in' ? 'status-online' : 'status-offline';
+                const statusText = log.action === 'check-in' ? 'In' : 'Out';
+                const photoHTML = log.photo ? '<img src="' + log.photo + '" class="checkin-photo" onclick="viewPhoto(\'' + log.photo + '\')">' : '-';
+                
+                html += '<tr>' +
+                    '<td>' + new Date(log.timestamp).toLocaleString() + '</td>' +
+                    '<td>' + log.employeeName + '</td>' +
+                    '<td class="' + statusClass + '">' + log.action + '</td>' +
+                    '<td>' + (log.lat && log.lng ? log.lat.toFixed(4) + ', ' + log.lng.toFixed(4) : 'N/A') + '</td>' +
+                    '<td>' + photoHTML + '</td>' +
+                    '<td><span style="padding: 5px 10px; background: ' + (log.action === 'check-in' ? '#d4edda' : '#f8d7da') + '; border-radius: 12px; font-size: 12px;">' + statusText + '</span></td>' +
+                    '</tr>';
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">No logs yet</td></tr>';
+        }
+        
+        function viewPhoto(photoSrc) {
+            window.open(photoSrc, '_blank');
+        }
+        
+        function filterLogs() {
+            const filterDate = document.getElementById('filterDate').value;
+            if (!filterDate) {
+                loadLogs();
+                return;
+            }
+            
+            const tbody = document.getElementById('logsTableBody');
+            let html = '';
+            
+            const filtered = attendanceLogs.filter(log => {
+                const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+                return logDate === filterDate;
+            });
+            
+            filtered.forEach(function(log) {
+                const statusClass = log.action === 'check-in' ? 'status-online' : 'status-offline';
+                const statusText = log.action === 'check-in' ? 'In' : 'Out';
+                const photoHTML = log.photo ? '<img src="' + log.photo + '" class="checkin-photo" onclick="viewPhoto(\'' + log.photo + '\')">' : '-';
+                
+                html += '<tr>' +
+                    '<td>' + new Date(log.timestamp).toLocaleString() + '</td>' +
+                    '<td>' + log.employeeName + '</td>' +
+                    '<td class="' + statusClass + '">' + log.action + '</td>' +
+                    '<td>' + (log.lat && log.lng ? log.lat.toFixed(4) + ', ' + log.lng.toFixed(4) : 'N/A') + '</td>' +
+                    '<td>' + photoHTML + '</td>' +
+                    '<td><span style="padding: 5px 10px; background: ' + (log.action === 'check-in' ? '#d4edda' : '#f8d7da') + '; border-radius: 12px; font-size: 12px;">' + statusText + '</span></td>' +
+                    '</tr>';
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">No logs for this date</td></tr>';
+        }
+        
+        function exportLogs() {
+            let csv = 'Date/Time,Employee,Action,Latitude,Longitude,Photo Available\n';
+            
+            attendanceLogs.forEach(function(log) {
+                csv += new Date(log.timestamp).toLocaleString() + ',' +
+                       log.employeeName + ',' +
+                       log.action + ',' +
+                       (log.lat || 'N/A') + ',' +
+                       (log.lng || 'N/A') + ',' +
+                       (log.photo ? 'Yes' : 'No') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attendance_logs_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            
+            document.getElementById(section === 'map' ? 'map-section' : section).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (section === 'map') {
+                setTimeout(initMap, 100);
+            }
+        }
+        
+        function initMap() {
+            if (map) return;
+            
+            const firstLocation = checkInLocations[0];
+            map = L.map('map').setView([firstLocation.lat, firstLocation.lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            updateLocationMarkers();
+            updateEmployeeMarkers();
+        }
+        
+        function updateLocationMarkers() {
+            if (!map) return;
+            
+            locationMarkers.forEach(m => map.removeLayer(m));
+            locationMarkers = [];
+            
+            checkInLocations.forEach(function(loc) {
+                const marker = L.marker([loc.lat, loc.lng], {
+                    icon: L.divIcon({
+                        html: '<div style="background: #f44336; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">📍</div>',
+                        iconSize: [30, 30]
+                    })
+                }).addTo(map);
+                marker.bindPopup('<strong>' + loc.name + '</strong><br>Radius: ' + loc.radius + 'm');
+                locationMarkers.push(marker);
+                
+                const circle = L.circle([loc.lat, loc.lng], {
+                    radius: loc.radius,
+                    color: '#4CAF50',
+                    fillColor: '#4CAF50',
+                    fillOpacity: 0.1
+                }).addTo(map);
+                locationMarkers.push(circle);
+            });
+        }
+        
+        function updateEmployeeMarkers() {
+            if (!map) return;
+            
+            employeeMarkers.forEach(m => map.removeLayer(m));
+            employeeMarkers = [];
+            
+            employees.forEach(function(emp) {
+                if (emp.lat && emp.lng) {
+                    let markerIcon;
+                    
+                    if (emp.image) {
+                        markerIcon = L.divIcon({
+                            html: '<div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 3px solid ' + 
+                                  (emp.status === 'checked-in' ? '#28a745' : '#dc3545') + '; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">' +
+                                  '<img src="' + emp.image + '" style="width: 100%; height: 100%; object-fit: cover;"></div>',
+                            iconSize: [50, 50],
+                            className: ''
+                        });
+                    } else {
+                        const color = emp.status === 'checked-in' ? '#2196F3' : '#999';
+                        markerIcon = L.divIcon({
+                            html: '<div style="width: 40px; height: 40px; border-radius: 50%; background: ' + color + 
+                                  '; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">' + 
+                                  emp.name.charAt(0) + '</div>',
+                            iconSize: [40, 40],
+                            className: ''
+                        });
+                    }
+                    
+                    const marker = L.marker([emp.lat, emp.lng], { icon: markerIcon }).addTo(map);
+                    marker.bindPopup('<strong>' + emp.name + '</strong><br>' + (emp.position || 'Employee') + '<br>Status: ' + emp.status + '<br>Last update: ' + new Date(emp.lastUpdate).toLocaleTimeString());
+                    employeeMarkers.push(marker);
+                }
+            });
+        }
+        
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function addEmployee() {
+            const name = document.getElementById('newEmpName').value.trim();
+            const username = document.getElementById('newEmpUsername').value.trim();
+            const password = document.getElementById('newEmpPassword').value.trim();
+            const position = document.getElementById('newEmpPosition').value.trim();
+            const email = document.getElementById('newEmpEmail').value.trim();
+            const phone = document.getElementById('newEmpPhone').value.trim();
+            const imageInput = document.getElementById('newEmpImage');
+            
+            if (!name || !username || !password) {
+                alert('Please fill required fields: Name, Username, Password');
+                return;
+            }
+            
+            // Check if username already exists
+            if (employees.find(e => e.username === username)) {
+                alert('⚠️ Username already exists. Please choose a different username.');
+                return;
+            }
+            
+            function saveEmployee(image) {
+                const newEmp = {
+                    id: Date.now(),
+                    name: name,
+                    username: username,
+                    password: password,
+                    position: position,
+                    email: email,
+                    phone: phone,
+                    status: 'checked-out',
+                    lat: null,
+                    lng: null,
+                    image: image,
+                    lastUpdate: null,
+                    sheetAccess: {
+                        url: sheetConfig.url,
+                        sheetId: sheetConfig.id,
+                        sheetName: sheetConfig.name
+                    }
+                };
+                
+                employees.push(newEmp);
+                saveEmployees();
+                
+                // Display credentials
+                document.getElementById('displayUsername').textContent = username;
+                document.getElementById('displayPassword').textContent = password;
+                document.getElementById('credentialDisplay').style.display = 'block';
+                
+                alert('✅ Employee added successfully!\n\nUsername: ' + username + '\nPassword: ' + password + '\n\nEmployee will have automatic access to the connected Google Sheet.');
+                
+                // Clear form
+                document.getElementById('newEmpName').value = '';
+                document.getElementById('newEmpUsername').value = '';
+                document.getElementById('newEmpPassword').value = '';
+                document.getElementById('newEmpPosition').value = '';
+                document.getElementById('newEmpEmail').value = '';
+                document.getElementById('newEmpPhone').value = '';
+                document.getElementById('newEmpImage').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                
+                updateStats();
+                updateEmployeeGrid();
+                updateEmployeeTable();
+                
+                // Log the action
+                addLog({
+                    employeeId: newEmp.id,
+                    employeeName: name,
+                    action: 'employee-added',
+                    timestamp: new Date().toISOString(),
+                    lat: null,
+                    lng: null,
+                    photo: null
+                });
+            }
+            
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveEmployee(e.target.result);
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            } else {
+                saveEmployee(null);
+            }
+        }
+        
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                alert('✅ Copied to clipboard: ' + text);
+            });
+        }
+        
+        function addLog(log) {
+            attendanceLogs.push(log);
+            localStorage.setItem('attendanceLogs', JSON.stringify(attendanceLogs));
+            updateStats();
+            loadLogs();
+        }
+        
+        function saveEmployees() {
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+        
+        function saveSettings() {
+            alert('✅ Settings saved!');
+        }
+        
+        function openGoogleSheet() {
+            if (sheetConfig.url) {
+                window.open(sheetConfig.url, '_blank');
+            } else {
+                alert('No sheet URL configured');
+            }
+        }
+        
+        function doLogout() {
+            if (confirm('Logout and clear all data?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        // Auto-login if already signed in
+        window.onload = function() {
+            const savedConfig = localStorage.getItem('sheetConfig');
+            const savedUser = localStorage.getItem('googleUser');
+            
+            if (savedConfig && savedUser) {
+                sheetConfig = JSON.parse(savedConfig);
+                googleUser = JSON.parse(savedUser);
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboardPage').classList.add('show');
+                initDashboard();
+            }
+        };
+        
+        // API to receive employee updates
+        window.receiveEmployeeUpdate = function(employeeData) {
+            const emp = employees.find(e => e.id === employeeData.id);
+            if (emp) {
+                emp.lat = employeeData.lat;
+                emp.lng = employeeData.lng;
+                emp.status = employeeData.status;
+                emp.lastUpdate = employeeData.timestamp;
+                
+                saveEmployees();
+                updateEmployeeMarkers();
+                updateStats();
+                updateEmployeeGrid();
+                updateEmployeeTable();
+                
+                if (employeeData.action) {
+                    addLog({
+                        employeeId: emp.id,
+                        employeeName: emp.name,
+                        action: employeeData.action,
+                        timestamp: employeeData.timestamp,
+                        lat: employeeData.lat,
+                        lng: employeeData.lng,
+                        photo: employeeData.photo || null
+                    });
+                }
+            }
+        };
+    </script>
+</body>
+</html>
